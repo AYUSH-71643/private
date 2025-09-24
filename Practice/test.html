@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login Page</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            background: #f4f4f4;
+            font-family: Arial, sans-serif;
+        }
+        .login-container {
+            max-width: 350px;
+            margin: 80px auto;
+            padding: 30px 25px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .login-container h2 {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        .login-container label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        .login-container input[type="text"],
+        .login-container input[type="text"],
+        .login-container input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 18px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .login-container button {
+            width: 100%;
+            padding: 10px;
+            background: #0078d4;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .login-container button:hover {
+            background: #005fa3;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:25px;">
+            <h2 style="margin:0;">Lavu&#10084;&#65039;</h2>
+        </div>
+        <form>
+            <input type="text" id="username" name="username" required placeholder="Enter Username (Your Name)">
+
+            <div style="position:relative;">
+                <input type="password" id="password" name="password" required style="box-sizing:border-box;" placeholder="Enter Password">
+            </div>
+
+            <button type="submit">Login</button>
+            <button type="button" id="demo-btn" style="margin-top:10px;background:#4caf50;">Demo Login</button>
+        </form>
+        <div id="login-message" style="margin-top:15px;text-align:center;color:#d32f2f;"></div>
+    </div>
+<script>
+document.querySelector('form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+    const messageDiv = document.getElementById('login-message');
+    if (username === 'Ritu' && password === '2007') {
+        document.body.innerHTML = `
+            <div style="position:fixed;top:20px;right:30px;z-index:1000;">
+                <button id='logout-btn' style="background:#d32f2f;color:#fff;border:none;padding:8px 18px;border-radius:5px;font-size:16px;cursor:pointer;">Logout</button>
+            </div>
+            <div style=\"height:100vh;\"></div>
+        `;
+        document.getElementById('logout-btn').addEventListener('click', function() {
+            location.reload();
+        });
+    } else {
+        messageDiv.style.color = '#d32f2f';
+        messageDiv.textContent = 'Invalid username or password.';
+    }
+});
+
+document.getElementById('demo-btn').addEventListener('click', function() {
+    document.getElementById('username').value = 'Ritu';
+    document.getElementById('password').value = '2007';
+});
+</script>
+</body>
+</html>
