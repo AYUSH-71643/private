@@ -1,6 +1,5 @@
 #include <iostream>
 using namespace std;
-
 class Person {
 public:
     Person() {
@@ -10,7 +9,6 @@ public:
         cout << "Destructor called" << endl;
     }
 };
-
 int main() {
     Person p;
     return 0;
