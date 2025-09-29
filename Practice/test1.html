@@ -1,0 +1,1273 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Campus Connect — Role-based Dashboard (Single File)</title>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+         :root {
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #0b1220 40%, #4f46e5 100%);
+            --glass: rgba(255, 255, 255, 0.06);
+            --glass-strong: rgba(255, 255, 255, 0.10);
+            --card-bg: #fff;
+            --accent: #7c3aed;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warn: #f59e0b;
+            --muted: #6b7280;
+        }
+        
+        * {
+            box-sizing: border-box;
+            font-family: "Segoe UI", Roboto, system-ui, Arial;
+        }
+        
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            background: #eef2ff;
+        }
+        /* --- Login Page --- */
+        
+        #loginPage {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            /* Replace gradient with student image background */
+            background: url('https://images.unsplash.com/photo-1513258496099-48168024aec0?auto=format&fit=crop&w=900&q=80') center center/cover no-repeat;
+            padding: 24px;
+        }
+        
+        .login-card {
+            width: 360px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.03));
+            border-radius: 14px;
+            padding: 26px;
+            box-shadow: 0 12px 40px rgba(2, 6, 23, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            color: white;
+            text-align: center;
+            backdrop-filter: blur(8px);
+        }
+        
+        .login-card h1 {
+            margin: 4px 0 12px;
+            font-size: 22px;
+            letter-spacing: 0.2px;
+        }
+        
+        .login-card p {
+            margin: 0 0 18px;
+            color: rgba(255, 255, 255, 0.85);
+        }
+        
+        .field {
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            border: none;
+            margin: 8px 0;
+            font-size: 14px;
+        }
+        
+        select.field {
+            appearance: none;
+            background: rgba(0, 0, 0, 0.1);
+            color: #fff;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            border: none;
+            font-weight: 700;
+            margin-top: 8px;
+            cursor: pointer;
+        }
+        
+        .btn-login {
+            background: linear-gradient(90deg, var(--accent), #2563eb);
+            color: white;
+            box-shadow: 0 6px 18px rgba(79, 70, 229, 0.18);
+        }
+        
+        .btn-demo {
+            background: transparent;
+            border: 1px dashed rgba(255, 255, 255, 0.18);
+            color: white;
+        }
+        
+        .small {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.8);
+            margin-top: 12px
+        }
+        /* --- Dashboard Layout --- */
+        
+        #dashboardPage {
+            display: none;
+            min-height: 100vh;
+            background: linear-gradient(180deg, #f3f6ff, #f8fafc);
+            padding: 18px;
+        }
+        
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px
+        }
+        
+        .brand .logo {
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #7c3aed, #2563eb);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 18px;
+            box-shadow: 0 6px 18px rgba(37, 99, 235, 0.12);
+        }
+        
+        .brand h2 {
+            margin: 0;
+            font-size: 18px;
+            color: #0f172a
+        }
+        
+        .userbox {
+            display: flex;
+            align-items: center;
+            gap: 8px
+        }
+        
+        .user-info {
+            display: flex;
+            flex-direction: column;
+            text-align: right
+        }
+        
+        .user-info strong {
+            font-size: 14px
+        }
+        
+        .user-info span {
+            font-size: 12px;
+            color: var(--muted)
+        }
+        
+        .logout {
+            background: var(--danger);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 10px;
+            cursor: pointer
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: 320px 1fr 360px;
+            gap: 16px;
+            align-items: start;
+        }
+        
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 14px;
+            box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+            color: #0b1220;
+            border: 1px solid rgba(11, 18, 32, 0.04);
+        }
+        
+        h3 {
+            margin: 0 0 10px;
+            font-size: 16px
+        }
+        
+        .profile-row {
+            display: flex;
+            gap: 12px;
+            align-items: center
+        }
+        
+        .avatar {
+            width: 64px;
+            height: 64px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #60a5fa, #a78bfa);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 18px
+        }
+        
+        .p-details small {
+            display: block;
+            color: var(--muted);
+            margin-top: 6px
+        }
+        /* small stat tiles */
+        
+        .stats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px
+        }
+        
+        .stat {
+            flex: 1 1 47%;
+            background: linear-gradient(180deg, rgba(124, 58, 237, 0.06), rgba(124, 58, 237, 0.02));
+            padding: 10px;
+            border-radius: 10px
+        }
+        
+        .stat strong {
+            display: block;
+            font-size: 18px
+        }
+        
+        .stat span {
+            font-size: 12px;
+            color: var(--muted)
+        }
+        /* records table */
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 8px
+        }
+        
+        th,
+        td {
+            padding: 8px;
+            border-bottom: 1px solid rgba(11, 18, 32, 0.06);
+            text-align: center;
+            font-size: 13px
+        }
+        
+        th {
+            color: var(--muted);
+            font-weight: 600
+        }
+        
+        .status-green {
+            color: var(--success);
+            font-weight: 700
+        }
+        
+        .status-yellow {
+            color: var(--warn);
+            font-weight: 700
+        }
+        
+        .status-red {
+            color: var(--danger);
+            font-weight: 700;
+            animation: blink 1s infinite
+        }
+        
+        @keyframes blink {
+            50% {
+                opacity: 0.3
+            }
+        }
+        /* right column: alerts + chatbot */
+        
+        .alerts ul {
+            list-style: none;
+            padding: 0;
+            margin: 8px 0
+        }
+        
+        .alerts li {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 8px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            border: 1px solid rgba(11, 18, 32, 0.04)
+        }
+        
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-top: 6px
+        }
+        
+        .dot.green {
+            background: var(--success)
+        }
+        
+        .dot.yellow {
+            background: var(--warn)
+        }
+        
+        .dot.red {
+            background: var(--danger)
+        }
+        /* charts */
+        
+        .charts canvas {
+            width: 100%!important;
+            height: 200px!important;
+            margin-top: 12px;
+            border-radius: 8px
+        }
+        /* chatbot */
+        
+        #chatbot {
+            height: 220px;
+            overflow-y: auto;
+            padding: 10px;
+            border-radius: 10px;
+            background: #f8fafc;
+            border: 1px solid rgba(11, 18, 32, 0.03)
+        }
+        
+        .msg {
+            padding: 8px 10px;
+            border-radius: 10px;
+            margin: 6px 0;
+            max-width: 78%
+        }
+        
+        .msg.bot {
+            background: #eef2ff;
+            color: #0b1220
+        }
+        
+        .msg.user {
+            background: #2563eb;
+            color: white;
+            margin-left: auto
+        }
+        /* responsive */
+        
+        @media (max-width:1100px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            .charts canvas {
+                height: 180px!important
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ===== LOGIN PAGE ===== -->
+    <div id="loginPage">
+        <div class="login-card" role="dialog" aria-label="Login">
+            <div style="display:flex;align-items:center;gap:12px;justify-content:center">
+                <div style="width:56px;height:56px;border-radius:12px;background:white;color:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:20px">CC</div>
+            </div>
+            <h1>Campus Connect</h1>
+
+
+            <input id="email" class="field" type="email" placeholder="Email (e.g. student1@campus.com)" />
+            <input id="password" class="field" type="password" placeholder="Password (1234 for demo)" />
+            <select id="role" class="field">
+        <option value="student">Student</option>
+        <option value="parent">Parent</option>
+        <option value="teacher">Teacher</option>
+        <option value="hod">HOD</option>
+      </select>
+
+            <button class="btn btn-login" onclick="login()">Login</button>
+            <button class="btn btn-demo" onclick="fillDemo()">Fill Demo</button>
+            <p class="small">Demo logins: student1@campus.com / teacher1@campus.com / parent1@campus.com / hod1@campus.com (password: 1234)</p>
+        </div>
+    </div>
+
+    <!-- ===== DASHBOARD PAGE ===== -->
+    <div id="dashboardPage">
+        <div class="topbar">
+            <div class="brand">
+                <div class="logo">CC</div>
+                <div>
+                    <h2>Campus Connect</h2>
+                    <!-- Removed AI-based Dropout Prediction & Counselling text as requested -->
+                </div>
+            </div>
+
+            <div class="userbox">
+                <button class="logout" onclick="logout()">Logout</button>
+            </div>
+        </div>
+
+        <div class="grid">
+
+            <!-- LEFT: Profile & Core Modules quick -->
+            <div>
+                <div id="userProfileInfo" style="display:none;margin-bottom:12px;padding:10px 14px;background:#f3f6ff;border-radius:10px;border:1px solid #e0e7ff;font-size:15px;font-weight:500;color:#3730a3"></div>
+                <!-- Pre-entry Academic History -->
+                <div class="card" id="preEntryHistory" style="display:none;margin-bottom:12px;"></div>
+                <div class="card" id="profileCard">
+                    <h3>Student Profile</h3>
+                    <div class="profile-row">
+                        <div class="avatar" id="avatarLetter">A</div>
+                        <div class="p-details">
+                            <strong id="pName">Amit Sharma</strong>
+                            <small id="pEmail">student1@campus.com</small>
+                            <small id="pExtra">Role: Student</small>
+                        </div>
+                    </div>
+
+                    <div class="stats" id="quickStats">
+                        <!-- dynamically filled -->
+                    </div>
+                    <div id="allStudentsList" style="display:none;margin-top:14px">
+                        <strong>All Students:</strong>
+                        <ul id="studentsNameList" style="margin:8px 0 0 0;padding-left:18px"></ul>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-top:12px;" id="coreModules">
+                    <h3>Core Features</h3>
+                    <div style="display:flex;flex-direction:column;gap:10px;margin-top:10px">
+                        <div style="display:flex;gap:10px">
+                            <div style="flex:1;background:linear-gradient(180deg,#fff, #f8fafc);padding:10px;border-radius:10px">
+                                <strong>Attendance</strong>
+                                <div style="font-size:12px;color:var(--muted);margin-top:6px">Records & Graphs</div>
+                            </div>
+                            <div style="flex:1;background:linear-gradient(180deg,#fff, #f8fafc);padding:10px;border-radius:10px">
+                                <strong>Marks</strong>
+                                <div style="font-size:12px;color:var(--muted);margin-top:6px">Deciring Trend</div>
+                            </div>
+                        </div>
+
+                        <div style="display:flex;gap:10px">
+                            <div style="flex:1;background:linear-gradient(180deg,#fff, #f8fafc);padding:10px;border-radius:10px">
+                                <strong>Backlogs</strong>
+                                <div style="font-size:12px;color:var(--muted);margin-top:6px">Pending & Alerts</div>
+                            </div>
+                            <div style="flex:1;background:linear-gradient(180deg,#fff, #f8fafc);padding:10px;border-radius:10px">
+                                <strong>Fees</strong>
+                                <div style="font-size:12px;color:var(--muted);margin-top:6px">Paid / Due</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MIDDLE: Main tables + Charts (varies by role) -->
+            <div>
+                <!-- STUDENT PANEL -->
+                <div class="card" id="studentPanel">
+                    <h3>Student Dashboard</h3>
+                    <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+                        <div style="flex:1 1 220px">
+                            <strong>Attendance Overview</strong>
+                            <canvas id="studentAttendanceChart"></canvas>
+                        </div>
+                        <div style="flex:1 1 220px">
+                            <strong>Marks Overview</strong>
+                            <canvas id="studentMarksChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:12px;">
+                        <strong>Academic Progression</strong>
+                        <canvas id="studentProgressChart"></canvas>
+                    </div>
+
+                    <div style="margin-top:12px">
+                        <strong>Subjects & Backlogs</strong>
+                        <table id="studentTable">
+                            <thead>
+                                <tr>
+                                    <th>Subject</th>
+                                    <th>Attendance</th>
+                                    <th>Marks</th>
+                                    <th>Backlog</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- PARENT PANEL -->
+                <div class="card" id="parentPanel" style="display:none;">
+                    <h3>Parent Dashboard</h3>
+                    <p style="color:var(--muted);margin-top:6px">Viewing child's summary and alerts</p>
+
+                    <div style="display:flex;gap:12px;margin-top:8px;flex-wrap:wrap">
+                        <div style="flex:1;min-width:200px">
+                            <strong>Attendance (Child)</strong>
+                            <canvas id="parentAttendanceChart"></canvas>
+                        </div>
+                        <div style="flex:1;min-width:200px">
+                            <strong>Marks (Child)</strong>
+                            <canvas id="parentMarksChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:12px">
+                        <strong>Academic Progression</strong>
+                        <canvas id="parentProgressChart"></canvas>
+                    </div>
+                    <div style="margin-top:12px">
+                        <strong>Recent Alerts</strong>
+                        <div class="alerts" id="parentAlerts"></div>
+                    </div>
+                </div>
+
+                <!-- TEACHER PANEL -->
+                <div class="card" id="teacherPanel" style="display:none;">
+                    <h3>Teacher Dashboard</h3>
+                    <p style="color:var(--muted);margin-top:6px">Manage your class & monitor students</p>
+
+                    <div style="margin-top:10px">
+                        <strong>Class Performance (Quick)</strong>
+                        <canvas id="teacherClassChart"></canvas>
+                    </div>
+
+                    <div style="margin-top:12px">
+                        <strong>Students</strong>
+                        <table id="teacherTable">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Attendance</th>
+                                    <th>Marks</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- HOD PANEL -->
+                <div class="card" id="hodPanel" style="display:none;">
+                    <h3>HOD Dashboard</h3>
+                    <p style="color:var(--muted);margin-top:6px">Department overview & risk indicators</p>
+
+                    <div style="display:flex;gap:12px;margin-top:10px">
+                        <div style="flex:1">
+                            <strong>Aggregate Attendance</strong>
+                            <canvas id="hodAttendanceChart"></canvas>
+                        </div>
+                        <div style="flex:1">
+                            <strong>Risk Zones</strong>
+                            <canvas id="hodRiskChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:12px">
+                        <strong>Alerts Log</strong>
+                        <div class="alerts" id="hodAlerts"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT: Alerts & Chatbot -->
+            <div>
+                <div class="card alerts">
+                    <h3>Alerts & Risk Indicators</h3>
+                    <p style="color:var(--muted);margin-top:6px">System flags students based on attendance, marks & backlogs.</p>
+                    <ul id="globalAlerts"></ul>
+                </div>
+
+                <div class="card" style="margin-top:12px;">
+                    <h3>Counselling Chatbot</h3>
+                    <div id="chatbot"></div>
+                    <div style="display:flex;gap:8px;margin-top:10px">
+                        <input id="chatInput" placeholder="Type a message..." style="flex:1;padding:10px;border-radius:8px;border:1px solid rgba(11,18,32,0.06)" onkeypress="if(event.key==='Enter'){sendMessage();}" />
+                        <button onclick="sendMessage()" style="background:var(--accent);color:white;border:none;padding:10px 12px;border-radius:8px;cursor:pointer">Send</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+        /* ---------------------------
+           Demo data & users
+           --------------------------- */
+        const users = [{
+            name: "Amit Sharma",
+            email: "student1@campus.com",
+            password: "1234",
+            role: "student",
+            studentId: "S01"
+        }, {
+            name: "Ravi Kumar",
+            email: "teacher1@campus.com",
+            password: "1234",
+            role: "teacher"
+        }, {
+            name: "Priya Verma",
+            email: "parent1@campus.com",
+            password: "1234",
+            role: "parent",
+            childId: "S02" // Priya Verma's child is Priya (id S02)
+        }, {
+            name: "HOD User",
+            email: "hod1@campus.com",
+            password: "1234",
+            role: "hod"
+        }];
+
+        // central student records (used by dashboards)
+        const students = [{
+            id: "S01",
+            name: "Amit",
+            subject: "Math",
+            attendance: 65,
+            marks: 70,
+            backlogs: 1,
+            fees: "Due",
+            sem: [60, 65, 70, 72],
+            preEntry: {
+                school: "ABC Public School",
+                board: "CBSE",
+                percentage: 88,
+                exam: "JEE Mains",
+                examScore: 92
+            }
+        }, {
+            id: "S02",
+            name: "Priya",
+            subject: "Science",
+            attendance: 85,
+            marks: 90,
+            backlogs: 0,
+            fees: "Paid",
+            sem: [80, 82, 85, 90],
+            preEntry: {
+                school: "XYZ Convent",
+                board: "ICSE",
+                percentage: 93,
+                exam: "NEET",
+                examScore: 95
+            }
+        }, {
+            id: "S03",
+            name: "Ravi",
+            subject: "English",
+            attendance: 45,
+            marks: 35,
+            backlogs: 2,
+            fees: "Due",
+            sem: [55, 50, 45, 40],
+            preEntry: {
+                school: "Govt. School",
+                board: "State Board",
+                percentage: 75,
+                exam: "None",
+                examScore: null
+            }
+        }, {
+            id: "S04",
+            name: "Kavya",
+            subject: "CS",
+            attendance: 72,
+            marks: 68,
+            backlogs: 0,
+            fees: "Paid",
+            sem: [70, 69, 72, 74],
+            preEntry: {
+                school: "St. Mary's",
+                board: "CBSE",
+                percentage: 89,
+                exam: "JEE Mains",
+                examScore: 88
+            }
+        }];
+
+        /* --------------------------------
+           Login / Role handling
+           -------------------------------- */
+        // Make Fill Demo button cycle through demo users on each click
+        let demoIndex = 0;
+        function fillDemo() {
+            const d = users[demoIndex % users.length];
+            document.getElementById('email').value = d.email;
+            document.getElementById('password').value = d.password;
+            document.getElementById('role').value = d.role;
+            demoIndex++;
+        }
+
+        function login() {
+            const email = document.getElementById('email').value.trim();
+            const pass = document.getElementById('password').value.trim();
+            const role = document.getElementById('role').value;
+
+            const u = users.find(x => x.email === email && x.password === pass && x.role === role);
+            if (!u) {
+                alert('Invalid login — use demo credentials (email: student1@campus.com etc, password: 1234)');
+                return;
+            }
+            // store current user in memory (no server)
+            window.currentUser = u;
+            // show dashboard & setup according to role
+            showDashboardForRole(u);
+        }
+
+        /* Logout */
+        function logout() {
+            window.currentUser = null;
+            // hide dashboard show login
+            document.getElementById('dashboardPage').style.display = 'none';
+            document.getElementById('loginPage').style.display = 'flex';
+            // clear chat
+            document.getElementById('chatbot').innerHTML = '';
+        }
+
+        /* --------------------------------
+           Role-based dashboard show
+           -------------------------------- */
+    function showDashboardForRole(user) {
+        // Show user name and role at the top of left column
+        const userProfileInfo = document.getElementById('userProfileInfo');
+        if (userProfileInfo) {
+            userProfileInfo.style.display = 'block';
+            userProfileInfo.textContent = `${user.name} — ${user.role.charAt(0).toUpperCase() + user.role.slice(1)}`;
+        }
+        // Show all students under profile for teacher only
+        const allStudentsDiv = document.getElementById('allStudentsList');
+        const studentsNameList = document.getElementById('studentsNameList');
+        if (user.role === 'teacher' && allStudentsDiv && studentsNameList) {
+            allStudentsDiv.style.display = 'block';
+            studentsNameList.innerHTML = '';
+            students.forEach(s => {
+                const li = document.createElement('li');
+                li.textContent = s.name;
+                studentsNameList.appendChild(li);
+            });
+        } else if (allStudentsDiv) {
+            allStudentsDiv.style.display = 'none';
+        }
+    // Pre-entry Academic History (show for student/parent/hod/teacher)
+    const preEntryDiv = document.getElementById('preEntryHistory');
+    // User info removed from topbar as requested
+
+        if (user.role === 'student') {
+            const s = students.find(x => x.id === (user.studentId || 'S01'));
+            if (preEntryDiv && s && s.preEntry) {
+                preEntryDiv.style.display = 'block';
+                preEntryDiv.innerHTML = `<h3>Pre-entry Academic History</h3>
+                    <div style="margin-bottom:6px"><strong>School:</strong> ${s.preEntry.school} (${s.preEntry.board})</div>
+                    <div style="margin-bottom:6px"><strong>School %:</strong> ${s.preEntry.percentage}%</div>
+                    <div style="margin-bottom:6px"><strong>Competitive Exam:</strong> ${s.preEntry.exam}${s.preEntry.examScore !== null ? ` (Score: ${s.preEntry.examScore})` : ''}</div>`;
+            }
+        }
+
+        // show dashboard, hide login
+        document.getElementById('loginPage').style.display = 'none';
+        document.getElementById('dashboardPage').style.display = 'block';
+
+        // set quick stats based on role
+        const quick = document.getElementById('quickStats');
+        quick.innerHTML = '';
+
+        if (user.role === 'student') {
+            const s = students.find(x => x.id === (user.studentId || 'S01'));
+            addStat('Attendance', s.attendance + '%', s.attendance >= 75 ? 'green' : (s.attendance >= 60 ? 'yellow' : 'red'));
+            addStat('Marks (avg)', s.marks + '%', s.marks >= 70 ? 'green' : (s.marks >= 50 ? 'yellow' : 'red'));
+            addStat('Backlogs', s.backlogs, s.backlogs > 1 ? 'red' : 'green');
+            addStat('Fees', s.fees, s.fees === 'Paid' ? 'green' : 'red');
+
+            // show panels
+            showOnly(['studentPanel']);
+            populateStudentPanel(s);
+            populateGlobalAlerts(user); // pass user for role-filtered alerts
+            chatWelcome();
+        } else if (user.role === 'parent') {
+            // find child by childId if present else use S01
+            const childId = user.childId || 'S01';
+            const child = students.find(x => x.id === childId);
+            addStat('Child Attendance', child.attendance + '%', child.attendance >= 75 ? 'green' : (child.attendance >= 60 ? 'yellow' : 'red'));
+            addStat('Child Marks', child.marks + '%', child.marks >= 70 ? 'green' : (child.marks >= 50 ? 'yellow' : 'red'));
+            addStat('Backlogs', child.backlogs, child.backlogs > 1 ? 'red' : 'green');
+
+            showOnly(['parentPanel']);
+            populateParentPanel(child);
+            populateGlobalAlerts(user);
+            chatWelcome();
+        } else if (user.role === 'teacher') {
+            // teacher sees class stats
+            addStat('Class Avg Attendance', avg(students.map(s => s.attendance)) + '%', avg(students.map(s => s.attendance)) >= 70 ? 'green' : 'yellow');
+            addStat('Students at Risk', students.filter(s => isHighRisk(s)).length, 'red');
+            addStat('Subjects', '3', 'green');
+
+            showOnly(['teacherPanel']);
+            populateTeacherPanel();
+            populateGlobalAlerts(user);
+            chatWelcome();
+        } else if (user.role === 'hod') {
+            addStat('Dept Avg Attendance', avg(students.map(s => s.attendance)) + '%', avg(students.map(s => s.attendance)) >= 70 ? 'green' : 'yellow');
+            addStat('Red Zone', students.filter(s => isHighRisk(s)).length, 'red');
+            addStat('Yellow Zone', students.filter(s => isWarning(s)).length, 'yellow');
+
+            showOnly(['hodPanel']);
+            populateHodPanel();
+            populateGlobalAlerts(user);
+            chatWelcome();
+        }
+    }
+
+        /* helper show/hide */
+        function showOnly(listIds) {
+            const panels = ['studentPanel', 'parentPanel', 'teacherPanel', 'hodPanel'];
+            panels.forEach(id => document.getElementById(id).style.display = (listIds.includes(id) ? 'block' : 'none'));
+        }
+
+        /* add small stat tile */
+        function addStat(title, value, color) {
+            const el = document.createElement('div');
+            el.className = 'stat';
+            el.innerHTML = `<small style="color:var(--muted)">${title}</small><strong>${value}</strong>`;
+            document.getElementById('quickStats').appendChild(el);
+        }
+
+        /* --------------------------------
+           Alerts & Risk logic (ROLE-BASED)
+           -------------------------------- */
+        function isHighRisk(s) {
+            return (s.attendance < 50 || s.marks < 40 || s.backlogs > 1);
+        }
+
+        function isWarning(s) {
+            return (s.attendance < 70 && s.attendance >= 50) || (s.marks < 65 && s.marks >= 40) || (s.backlogs > 0 && s.backlogs <= 1);
+        }
+
+        /* Which students should be visible to the currently logged-in user for alerts */
+        function getVisibleStudentsForUser(user) {
+            if (!user) return [];
+            if (user.role === 'hod' || user.role === 'teacher') {
+                // HOD and Teacher see everyone
+                return students.slice();
+            }
+            if (user.role === 'parent') {
+                // Parent sees only their child (by childId), fallback to child name if needed
+                if (user.childId) {
+                    // If parent is Priya Verma, but childId is missing or wrong, show Amit Sharma (student1)
+                    if (user.childId === 'S02') {
+                        // Special case: show Amit Sharma instead of Priya
+                        return students.filter(s => s.name === 'Amit Sharma' || s.id === 'S01');
+                    }
+                    return students.filter(s => s.id === user.childId);
+                } else if (user.name) {
+                    // Try to match by name if childId missing
+                    if (user.name.toLowerCase() === 'priya verma') {
+                        // Special case: show Amit Sharma
+                        return students.filter(s => s.name === 'Amit Sharma' || s.id === 'S01');
+                    }
+                    return students.filter(s => s.name.toLowerCase() === user.name.toLowerCase());
+                }
+                return [];
+            }
+            if (user.role === 'student') {
+                // Student sees only their own record
+                const sid = user.studentId || null;
+                return students.filter(s => s.id === sid);
+            }
+            // fallback: nothing
+            return [];
+        }
+
+        /* Populate global alerts but only for visible students depending on role */
+        function populateGlobalAlerts(user) {
+            const ul = document.getElementById('globalAlerts');
+            ul.innerHTML = '';
+            const visible = getVisibleStudentsForUser(user);
+
+            if (visible.length === 0) {
+                ul.innerHTML = '<li style="padding:8px;color:var(--muted)">No alerts available for your role / selection.</li>';
+                return;
+            }
+
+            visible.forEach(s => {
+                let cls = 'green',
+                    text = 'Safe',
+                    dotClass = 'green';
+                if (isHighRisk(s)) {
+                    cls = 'status-red';
+                    text = 'High Risk (HOD/Parents notified)';
+                    dotClass = 'red';
+                } else if (isWarning(s)) {
+                    cls = 'status-yellow';
+                    text = 'Warning (monitor)';
+                    dotClass = 'yellow';
+                }
+                ul.innerHTML += `<li><div class="dot ${dotClass}"></div><div><strong>${s.name}</strong> — ${s.subject}<br/><small style="color:var(--muted)">${text} • Attendance: ${s.attendance}% • Marks: ${s.marks}% • Backlogs: ${s.backlogs}</small></div></li>`;
+            });
+        }
+
+        /* --------------------------------
+           Student Panel population + charts
+           -------------------------------- */
+        let charts = {}; // store chart instances to update/destroy if needed
+
+        function populateStudentPanel(student) {
+            // table: show student's subject entries (here we mimic per-subject)
+            const tbody = document.querySelector('#studentTable tbody');
+            tbody.innerHTML = '';
+            // create few subject rows for demo
+            const subjects = [{
+                subject: 'Math',
+                attendance: student.attendance,
+                marks: student.marks,
+                backlog: student.backlogs
+            }, {
+                subject: 'Physics',
+                attendance: clamp(student.attendance - 6, 30, 95),
+                marks: clamp(student.marks - 5, 20, 98),
+                backlog: 0
+            }, {
+                subject: 'English',
+                attendance: clamp(student.attendance - 20, 20, 95),
+                marks: clamp(student.marks - 35, 10, 95),
+                backlog: student.backlogs > 0 ? 1 : 0
+            }];
+            subjects.forEach(s => {
+                const state = isHighRisk(s) ? 'status-red' : (isWarning(s) ? 'status-yellow' : 'status-green');
+                tbody.innerHTML += `<tr><td>${s.subject}</td><td>${s.attendance}%</td><td>${s.marks}%</td><td class="${state}">${s.backlog}</td></tr>`;
+            });
+
+            // attendance chart
+            destroyChart('studentAttendanceChart');
+            charts.studentAttendanceChart = new Chart(document.getElementById('studentAttendanceChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Present', 'Absent'],
+                    datasets: [{
+                        data: [student.attendance, 100 - student.attendance],
+                        backgroundColor: ['#10b981', '#ef4444']
+                    }]
+                },
+                options: {
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+
+            // marks chart
+            destroyChart('studentMarksChart');
+            charts.studentMarksChart = new Chart(document.getElementById('studentMarksChart'), {
+                type: 'bar',
+                data: {
+                    labels: ['This Term'],
+                    datasets: [{
+                        label: 'Marks %',
+                        data: [student.marks],
+                        backgroundColor: '#2563eb'
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+
+            // progression
+            destroyChart('studentProgressChart');
+            charts.studentProgressChart = new Chart(document.getElementById('studentProgressChart'), {
+                type: 'line',
+                data: {
+                    labels: ['Sem1', 'Sem2', 'Sem3', 'Sem4'],
+                    datasets: [{
+                        label: 'GPA Trend',
+                        data: student.sem,
+                        borderColor: '#7c3aed',
+                        fill: false,
+                        tension: 0.35
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+        }
+
+        /* --------------------------------
+           Parent panel
+           -------------------------------- */
+        function populateParentPanel(child) {
+            // charts - similar to student
+            destroyChart('parentAttendanceChart');
+            destroyChart('parentMarksChart');
+            destroyChart('parentProgressChart');
+            charts.parentAttendanceChart = new Chart(document.getElementById('parentAttendanceChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Present', 'Absent'],
+                    datasets: [{
+                        data: [child.attendance, 100 - child.attendance],
+                        backgroundColor: ['#10b981', '#ef4444']
+                    }]
+                }
+            });
+            charts.parentMarksChart = new Chart(document.getElementById('parentMarksChart'), {
+                type: 'bar',
+                data: {
+                    labels: [child.name],
+                    datasets: [{
+                        label: 'Marks %',
+                        data: [child.marks],
+                        backgroundColor: '#7c3aed'
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+
+            // Academic Progression chart (line)
+            if (child.sem) {
+                charts.parentProgressChart = new Chart(document.getElementById('parentProgressChart'), {
+                    type: 'line',
+                    data: {
+                        labels: ['Sem1', 'Sem2', 'Sem3', 'Sem4'],
+                        datasets: [{
+                            label: 'GPA Trend',
+                            data: child.sem,
+                            borderColor: '#7c3aed',
+                            fill: false,
+                            tension: 0.35
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100
+                            }
+                        }
+                    }
+                });
+            }
+
+            // alerts
+            const palerts = document.getElementById('parentAlerts');
+            palerts.innerHTML = '';
+            const list = [];
+            if (child.attendance < 60) list.push({
+                type: 'yellow',
+                text: 'Attendance below 60% — monitor closely'
+            });
+            if (child.backlogs > 0) list.push({
+                type: 'red',
+                text: `Has ${child.backlogs} backlog(s) — counselling advised`
+            });
+            if (child.fees !== 'Paid') list.push({
+                type: 'yellow',
+                text: 'Fee pending'
+            });
+
+            if (list.length === 0) palerts.innerHTML = '<small style="color:var(--muted)">No alerts. Student is in green zone.</small>';
+            else list.forEach(l => {
+                palerts.innerHTML += `<div style="padding:8px;border-radius:8px;margin-bottom:8px;border:1px solid rgba(11,18,32,0.04)"><div style="display:flex;gap:8px;align-items:center"><div style="width:10px;height:10px;border-radius:50%;background:${l.type==='red'?getComputedStyle(document.documentElement).getPropertyValue('--danger'):'#f59e0b'}"></div><div>${l.text}</div></div></div>`;
+            });
+        }
+
+        /* --------------------------------
+           Teacher Panel
+           -------------------------------- */
+        function populateTeacherPanel() {
+            // teacher class chart: average attendance per student
+            destroyChart('teacherClassChart');
+            const labels = students.map(s => s.name);
+            const data = students.map(s => s.attendance);
+            charts.teacherClassChart = new Chart(document.getElementById('teacherClassChart'), {
+                type: 'bar',
+                data: {
+                    labels,
+                    datasets: [{
+                        label: 'Attendance %',
+                        data,
+                        backgroundColor: '#60a5fa'
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+
+            // students table
+            const tbody = document.querySelector('#teacherTable tbody');
+            tbody.innerHTML = '';
+            students.forEach(s => {
+                const state = isHighRisk(s) ? 'status-red' : (isWarning(s) ? 'status-yellow' : 'status-green');
+                tbody.innerHTML += `<tr><td>${s.name}</td><td>${s.attendance}%</td><td>${s.marks}%</td><td class="${state}">${state.includes('red') ? 'High Risk' : (state.includes('yellow') ? 'Warning' : 'Safe')}</td></tr>`;
+            });
+        }
+
+        /* --------------------------------
+           HOD Panel
+           -------------------------------- */
+        function populateHodPanel() {
+            // aggregate attendance chart
+            destroyChart('hodAttendanceChart');
+            const labels = students.map(s => s.name);
+            const data = students.map(s => s.attendance);
+            charts.hodAttendanceChart = new Chart(document.getElementById('hodAttendanceChart'), {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [{
+                        label: 'Attendance %',
+                        data,
+                        borderColor: '#7c3aed',
+                        fill: false
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+
+            // risk distribution pie
+            destroyChart('hodRiskChart');
+            const high = students.filter(s => isHighRisk(s)).length;
+            const warn = students.filter(s => isWarning(s)).length;
+            const safe = students.length - high - warn;
+            charts.hodRiskChart = new Chart(document.getElementById('hodRiskChart'), {
+                type: 'pie',
+                data: {
+                    labels: ['Safe', 'Warning', 'High Risk'],
+                    datasets: [{
+                        data: [safe, warn, high],
+                        backgroundColor: ['#10b981', '#f59e0b', '#ef4444']
+                    }]
+                }
+            });
+
+            // alerts
+            const hodAlerts = document.getElementById('hodAlerts');
+            hodAlerts.innerHTML = '';
+            students.forEach(s => {
+                if (isHighRisk(s) || isWarning(s)) {
+                    const level = isHighRisk(s) ? 'red' : 'yellow';
+                    hodAlerts.innerHTML += `<div style="padding:8px;border-radius:8px;margin-bottom:8px;border:1px solid rgba(11,18,32,0.04)"><strong>${s.name}</strong><div style="color:var(--muted)">Attendance: ${s.attendance}% • Marks: ${s.marks}% • Backlogs: ${s.backlogs}</div></div>`;
+                }
+            });
+        }
+
+        /* --------------------------------
+           Chatbot (simple rules)
+           -------------------------------- */
+        function chatWelcome() {
+            appendChat("bot", "Hello! I'm your AI Counselling Assistant. How are you feeling today?");
+        }
+
+        function appendChat(who, text) {
+            const c = document.getElementById('chatbot');
+            const div = document.createElement('div');
+            div.className = 'msg ' + (who === 'user' ? 'user' : 'bot');
+            div.innerText = text;
+            c.appendChild(div);
+            c.scrollTop = c.scrollHeight;
+        }
+
+        function detectMood(msg) {
+            msg = msg.toLowerCase();
+            if (msg.includes('sad') || msg.includes('down') || msg.includes('stress') || msg.includes('anxious')) return 'negative';
+            if (msg.includes('happy') || msg.includes('good') || msg.includes('great') || msg.includes('fine')) return 'positive';
+            return 'neutral';
+        }
+
+        function chatbotReply(msg) {
+            const mood = detectMood(msg);
+            if (mood === 'negative') return "I sense you're stressed. Try deep breaths. Would you like coping tips or to connect with a counsellor?";
+            if (mood === 'positive') return "That's great to hear! Keep it up 😊";
+            return "Thanks for sharing. Can you tell me more about what's bothering you?";
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const txt = input.value.trim();
+            if (!txt) return;
+            appendChat('user', txt);
+            setTimeout(() => appendChat('bot', chatbotReply(txt)), 450);
+            input.value = '';
+        }
+
+        /* --------------------------------
+           Utilities: charts destroy, avg etc.
+           -------------------------------- */
+        function destroyChart(id) {
+            try {
+                const el = document.getElementById(id);
+                if (!el) return;
+                if (charts[id]) {
+                    charts[id].destroy();
+                    charts[id] = null;
+                }
+            } catch (e) {}
+        }
+
+        function avg(arr) {
+            return Math.round(arr.reduce((a, b) => a + b, 0) / arr.length);
+        }
+
+        function clamp(v, lo, hi) {
+            return Math.max(lo, Math.min(hi, v));
+        }
+
+        /* Initialize default UI: keep login visible */
+        document.addEventListener('DOMContentLoaded', () => {
+            // nothing to do until login
+        });
+    </script>
+</body>
+
+</html>
